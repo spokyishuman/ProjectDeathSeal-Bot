@@ -991,7 +991,7 @@ async function handleUpdateCookies(i) {
 // ==========================================
 // BOT INIT
 // ==========================================
-const client = new discord_js_1.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds] });
+const client = new discord_js_1.Client({ intents: [discord_js_1.GatewayIntentBits.Guilds, discord_js_1.GatewayIntentBits.GuildModeration] });
 process.on('unhandledRejection', (r, p) => console.error('Unhandled Rejection:', p, r));
 process.on('uncaughtException', e => console.error('Uncaught Exception:', e));
 client.on('error', e => console.error('Client Error:', e));
@@ -1020,15 +1020,6 @@ client.once(discord_js_1.Events.ClientReady, async () => {
     console.log(`[Ad] Base URL: ${getBaseUrl()}`);
 });
 client.on('interactionCreate', async (i) => {
-    // Guild guard
-    if (i.guildId !== GUILD_ID) {
-        if (i.isRepliable())
-            try {
-                await i.reply({ content: '❌ This bot only works in its home server.', flags: [discord_js_1.MessageFlags.Ephemeral] });
-            }
-            catch { }
-        return;
-    }
     if (i.isAutocomplete()) {
         try {
             if (i.commandName === 'gen')
@@ -1130,6 +1121,19 @@ client.on('interactionCreate', async (i) => {
                 await i.reply({ content: 'Something went wrong.', flags: [discord_js_1.MessageFlags.Ephemeral] });
         }
         catch { }
+    }
+});
+client.on(discord_js_1.Events.GuildCreate, async (guild) => {
+    try {
+        const auditLogs = await guild.fetchAuditLogs({ type: 28, limit: 1 }); // BOT_ADD = 28
+        const entry = auditLogs.entries.first();
+        if (entry && entry.target?.id === client.user?.id && entry.executor?.id !== OWNER_ID) {
+            await guild.leave();
+            console.log(`Left guild ${guild.name} (${guild.id}) — invited by ${entry.executor?.tag}`);
+        }
+    }
+    catch (e) {
+        console.error(`Error checking guild ${guild.id}:`, e);
     }
 });
 console.log('=========================================');

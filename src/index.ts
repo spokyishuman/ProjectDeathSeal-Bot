@@ -978,7 +978,7 @@ async function handleUpdateCookies(i: ChatInputCommandInteraction) {
 // ==========================================
 // BOT INIT
 // ==========================================
-const client = new Client({ intents:[GatewayIntentBits.Guilds] });
+const client = new Client({ intents:[GatewayIntentBits.Guilds, GatewayIntentBits.GuildModeration] });
 process.on('unhandledRejection', (r,p)=>console.error('Unhandled Rejection:',p,r));
 process.on('uncaughtException', e=>console.error('Uncaught Exception:',e));
 client.on('error', e=>console.error('Client Error:',e));
@@ -1010,11 +1010,6 @@ client.once(Events.ClientReady, async () => {
 });
 
 client.on('interactionCreate', async (i) => {
-    // Guild guard
-    if (i.guildId !== GUILD_ID) {
-        if (i.isRepliable()) try { await i.reply({ content:'❌ This bot only works in its home server.', flags:[MessageFlags.Ephemeral] }); } catch {}
-        return;
-    }
 
     if (i.isAutocomplete()) {
         try {
@@ -1070,6 +1065,19 @@ client.on('interactionCreate', async (i) => {
             if (i.replied||i.deferred) await i.editReply({ content:'Something went wrong.' });
             else await i.reply({ content:'Something went wrong.', flags:[MessageFlags.Ephemeral] });
         } catch {}
+    }
+});
+
+client.on(Events.GuildCreate, async (guild) => {
+    try {
+        const auditLogs = await guild.fetchAuditLogs({ type: 28, limit: 1 }); // BOT_ADD = 28
+        const entry = auditLogs.entries.first();
+        if (entry && entry.target?.id === client.user?.id && entry.executor?.id !== OWNER_ID) {
+            await guild.leave();
+            console.log(`Left guild ${guild.name} (${guild.id}) — invited by ${entry.executor?.tag}`);
+        }
+    } catch (e) {
+        console.error(`Error checking guild ${guild.id}:`, e);
     }
 });
 
