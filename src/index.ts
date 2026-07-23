@@ -40,7 +40,8 @@ const ADSENSE_SLOT_ID = process.env.ADSENSE_SLOT_ID || '';
 const AD_REWARD       = parseInt(process.env.AD_REWARD || '1', 10);   // bonus rolls per ad watch
 const DAILY_ROLL_CAP  = 10;
 const REPO_OWNER      = 'spokyishuman';
-const REPO_NAME       = 'SpokysProjectLightning';
+const REPO_NAME       = 'Spoky-s-Project-Vercel';
+const APP_DISPLAY_NAME = 'Spoky\'s Project Vercel';
 const CREDENTIALS_PATH= process.env.GOOGLE_CREDENTIALS_PATH || './credentials.json';
 
 const ROOT               = path.join(__dirname, '..');
@@ -245,7 +246,7 @@ const SHOP_ITEMS = [
 // ROLL ADS
 // ==========================================
 const ROLL_ADS = [
-    '📢 **ProjectDeathSeal** is out! Download with `/download`',
+    '📢 **Spoky\'s Project Vercel** v1.0.0 is out! Download with `/download`',
     '🎮 Grab Steam manifests free with `/gen <game>`',
     '🔥 Weekend? Roll Sat/Sun for a 2× luck multiplier!',
     '💰 Free Gen every day — use `/daily` to claim yours!',
@@ -438,7 +439,7 @@ ${ADSENSE_PUB_ID && !ADSENSE_PUB_ID.includes('REPLACE') ? `
   <div class="feat"><div class="icon">🎲</div><h3>Economy & Rolls</h3><p>Earn Gen currency daily, roll the slots, and climb the leaderboard.</p></div>
   <div class="feat"><div class="icon">🎉</div><h3>Giveaways</h3><p>Host Discord giveaways with one command. Auto-draw winners.</p></div>
   <div class="feat"><div class="icon">📺</div><h3>Ad Rewards</h3><p>Watch an ad to earn bonus rolls beyond the 10-per-day limit.</p></div>
-  <div class="feat"><div class="icon">🔔</div><h3>Release Alerts</h3><p>Get notified in your channel when a new ProjectDeathSeal update drops.</p></div>
+  <div class="feat"><div class="icon">🔔</div><h3>Release Alerts</h3><p>Get notified in your channel when a new Project Vercel update drops.</p></div>
 </div>
 <footer>Spoky's Bot &copy; ${new Date().getFullYear()} · Built with Discord.js</footer>
 </body>
@@ -557,7 +558,7 @@ const commands = [
             .addStringOption(o => o.setName('message_id').setDescription('Giveaway message ID').setRequired(true))),
 
     // Repo
-    new SlashCommandBuilder().setName('download').setDescription('Download the latest ProjectDeathSeal release'),
+    new SlashCommandBuilder().setName('download').setDescription('Download the latest Project Vercel release'),
     new SlashCommandBuilder().setName('setrepoalerts').setDescription('Set channel for repo update alerts [Admin]')
         .addChannelOption(o => o.setName('channel').setDescription('Channel to post updates in').setRequired(true)
             .addChannelTypes(ChannelType.GuildText)),
@@ -929,7 +930,7 @@ async function handleDownload(i: ChatInputCommandInteraction) {
     await i.deferReply();
     try {
         const rel = await fetchLatestRelease();
-        const e = embed(`📦 ${REPO_NAME} — ${rel.tag_name}`, COLORS.cyan)
+        const e = embed(`📦 ${APP_DISPLAY_NAME} ${rel.tag_name}`, COLORS.cyan)
             .setDescription((rel.body||'No notes.').slice(0,1000))
             .addFields({ name:'Published', value:`<t:${Math.floor(new Date(rel.published_at).getTime()/1000)}:R>`, inline:true })
             .setURL(rel.html_url);
@@ -953,7 +954,7 @@ async function pollRepoUpdates(client: Client) {
         if (repoAlerts.lastTag && rel.tag_name === repoAlerts.lastTag) return;
         repoAlerts.lastTag = rel.tag_name; saveRepoAlerts();
         const ch = await client.channels.fetch(repoAlerts.channelId) as TextChannel;
-        const e = embed(`🚀 New Release: ${REPO_NAME} ${rel.tag_name}`, COLORS.orange)
+        const e = embed(`🚀 New Release: ${APP_DISPLAY_NAME} ${rel.tag_name}`, COLORS.orange)
             .setDescription((rel.body||'No notes.').slice(0,1000)).setURL(rel.html_url)
             .addFields({ name:'Published', value:`<t:${Math.floor(new Date(rel.published_at).getTime()/1000)}:R>` });
         if (rel.assets?.length) e.addFields({ name:'⬇️ Downloads', value:rel.assets.map((a:any)=>`[${a.name}](${a.browser_download_url})`).join('\n').slice(0,1024) });
